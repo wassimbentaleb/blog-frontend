@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
             </p>
             <div className="space-y-2 text-sm text-gray-600">
               <p>
-                <strong>Email:</strong> info@metablog.com
+                <strong>Email:</strong> info@teckblog.com
               </p>
               <p>
                 <strong>Phone:</strong> 880 123 456 789
@@ -124,10 +124,10 @@ const Footer: React.FC = () => {
         <div className="border-t border-gray-300 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-white font-bold">M</span>
+              <span className="text-white font-bold">T</span>
             </div>
             <span className="font-bold text-gray-800">
-              Meta<span className="text-primary">Blog</span>
+              Teck<span className="text-primary">blog</span>
             </span>
           </div>
 
@@ -148,7 +148,7 @@ const Footer: React.FC = () => {
 
         {/* Copyright */}
         <div className="text-center mt-8 text-sm text-gray-500">
-          © 2024 MetaBlog. All rights reserved. Built with React & Laravel.
+          © 2026 Teckblog. All rights reserved. Built with React & Laravel.
         </div>
       </div>
     </footer>
