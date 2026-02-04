@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { mockAPI } from '../../services/mockData';
 import { useAuth } from '../../context/AuthContext';
 import CommentForm from './CommentForm';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 interface Comment {
   id: number;
@@ -30,11 +31,24 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
   const [isReplying, setIsReplying] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [saving, setSaving] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isOwner = user && comment.user_id === user.id;
   const canEdit = isOwner;
   const canDelete = isOwner || isAdmin();
   const maxNestingLevel = 3;
+
+  // Count all nested replies recursively
+  const countReplies = (comment: Comment): number => {
+    if (!comment.replies || comment.replies.length === 0) return 0;
+    let count = comment.replies.length;
+    comment.replies.forEach((reply) => {
+      count += countReplies(reply);
+    });
+    return count;
+  };
+
+  const repliesCount = countReplies(comment);
 
   // Format relative time
   const getTimeAgo = (dateString: string) => {
@@ -65,15 +79,22 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return;
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
 
+  const handleDeleteConfirm = async () => {
+    setShowDeleteModal(false);
     try {
       await mockAPI.deleteComment(comment.id);
       onUpdate();
     } catch (error) {
       alert('Échec de la suppression du commentaire');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   const handleReplySubmit = () => {
@@ -185,7 +206,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
 
             {canDelete && (
               <button
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 className="text-red-600 hover:text-red-800 font-medium flex items-center space-x-1"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,6 +250,16 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        title="Supprimer le commentaire?"
+        message="Cette action est irréversible."
+        repliesCount={repliesCount}
+      />
     </div>
   );
 };
