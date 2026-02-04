@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
+import ReactionButtons from '../../components/common/ReactionButtons';
+import CommentList from '../../components/common/CommentList';
 import { mockAPI } from '../../services/mockData';
 import { formatDate } from '../../utils/helpers';
 
@@ -135,6 +137,16 @@ const SinglePost: React.FC = () => {
             color: '#374151',
           }}
         />
+
+        {/* Reactions */}
+        <div className="mb-8">
+          <ReactionButtons postId={post.id} />
+        </div>
+
+        {/* Comments */}
+        <div className="mb-12">
+          <CommentList postId={post.id} />
+        </div>
 
         {/* Related Posts */}
         <div className="mt-16">

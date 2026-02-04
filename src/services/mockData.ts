@@ -1,3 +1,12 @@
+// Reaction Types
+export const REACTION_TYPES = {
+  JADORE: 'jadore',      // I love it ❤️
+  JAIME: 'jaime',        // I like it 👍
+  INTERESSANT: 'interessant',  // Interesting 💡
+  INSPIRANT: 'inspirant',      // Inspiring ✨
+  UTILE: 'utile',        // Useful 👏
+} as const;
+
 // Mock Users Data
 export const mockUsers = [
   {
@@ -453,4 +462,267 @@ export const mockAPI = {
     mockCategories.splice(index, 1);
     return { message: 'Category deleted successfully' };
   },
+
+  // Comments
+  getPostComments: async (postId: number) => {
+    await delay(200);
+    const comments = JSON.parse(localStorage.getItem('mockComments') || '[]');
+    const postComments = comments.filter((c: any) => c.post_id === postId && c.is_approved);
+
+    // Build nested structure
+    const buildTree = (parentId: number | null = null): any[] => {
+      return postComments
+        .filter((c: any) => c.parent_id === parentId)
+        .map((c: any) => ({
+          ...c,
+          replies: buildTree(c.id),
+        }));
+    };
+
+    return buildTree();
+  },
+
+  addComment: async (postId: number, userId: number | null, content: string, parentId: number | null = null, authorName?: string, authorEmail?: string) => {
+    await delay(200);
+    const comments = JSON.parse(localStorage.getItem('mockComments') || '[]');
+
+    const newComment = {
+      id: Date.now(),
+      post_id: postId,
+      user_id: userId,
+      parent_id: parentId,
+      author_name: authorName || null,
+      author_email: authorEmail || null,
+      content,
+      is_approved: userId ? true : false, // Auto-approve if logged in
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: userId ? mockUsers.find(u => u.id === userId) : null,
+    };
+
+    comments.push(newComment);
+    localStorage.setItem('mockComments', JSON.stringify(comments));
+
+    return newComment;
+  },
+
+  updateComment: async (commentId: number, content: string) => {
+    await delay(200);
+    const comments = JSON.parse(localStorage.getItem('mockComments') || '[]');
+    const index = comments.findIndex((c: any) => c.id === commentId);
+
+    if (index === -1) throw new Error('Comment not found');
+
+    comments[index].content = content;
+    comments[index].updated_at = new Date().toISOString();
+
+    localStorage.setItem('mockComments', JSON.stringify(comments));
+    return comments[index];
+  },
+
+  deleteComment: async (commentId: number) => {
+    await delay(200);
+    const comments = JSON.parse(localStorage.getItem('mockComments') || '[]');
+
+    // Delete comment and all its replies
+    const deleteWithReplies = (id: number) => {
+      const toDelete = comments.filter((c: any) => c.parent_id === id);
+      toDelete.forEach((c: any) => deleteWithReplies(c.id));
+      const index = comments.findIndex((c: any) => c.id === id);
+      if (index !== -1) comments.splice(index, 1);
+    };
+
+    deleteWithReplies(commentId);
+    localStorage.setItem('mockComments', JSON.stringify(comments));
+
+    return { message: 'Comment deleted' };
+  },
+
+  approveComment: async (commentId: number) => {
+    await delay(200);
+    const comments = JSON.parse(localStorage.getItem('mockComments') || '[]');
+    const index = comments.findIndex((c: any) => c.id === commentId);
+
+    if (index === -1) throw new Error('Comment not found');
+
+    comments[index].is_approved = true;
+    localStorage.setItem('mockComments', JSON.stringify(comments));
+
+    return comments[index];
+  },
+
+  getPendingComments: async () => {
+    await delay(200);
+    const comments = JSON.parse(localStorage.getItem('mockComments') || '[]');
+    return comments.filter((c: any) => !c.is_approved);
+  },
+
+  // Reactions
+  getPostReactions: async (postId: number) => {
+    await delay(200);
+    const reactions = JSON.parse(localStorage.getItem('mockReactions') || '[]');
+    return reactions.filter((r: any) => r.post_id === postId);
+  },
+
+  getReactionStats: async (postId: number) => {
+    await delay(200);
+    const reactions = JSON.parse(localStorage.getItem('mockReactions') || '[]');
+    const postReactions = reactions.filter((r: any) => r.post_id === postId);
+
+    const stats = {
+      jadore: 0,
+      jaime: 0,
+      interessant: 0,
+      inspirant: 0,
+      utile: 0,
+      total: 0,
+    };
+
+    postReactions.forEach((r: any) => {
+      stats[r.reaction_type as keyof typeof stats]++;
+      stats.total++;
+    });
+
+    return stats;
+  },
+
+  getUserReaction: async (postId: number, userId: number | null) => {
+    await delay(200);
+    const reactions = JSON.parse(localStorage.getItem('mockReactions') || '[]');
+    return reactions.find((r: any) => r.post_id === postId && r.user_id === userId) || null;
+  },
+
+  addReaction: async (postId: number, userId: number | null, reactionType: string) => {
+    await delay(200);
+    const reactions = JSON.parse(localStorage.getItem('mockReactions') || '[]');
+
+    // Remove existing reaction from this user on this post
+    const filtered = reactions.filter((r: any) => !(r.post_id === postId && r.user_id === userId));
+
+    // Add new reaction
+    const newReaction = {
+      id: Date.now(),
+      post_id: postId,
+      user_id: userId,
+      reaction_type: reactionType,
+      created_at: new Date().toISOString(),
+    };
+
+    filtered.push(newReaction);
+    localStorage.setItem('mockReactions', JSON.stringify(filtered));
+
+    return newReaction;
+  },
+
+  removeReaction: async (postId: number, userId: number | null) => {
+    await delay(200);
+    const reactions = JSON.parse(localStorage.getItem('mockReactions') || '[]');
+    const filtered = reactions.filter((r: any) => !(r.post_id === postId && r.user_id === userId));
+    localStorage.setItem('mockReactions', JSON.stringify(filtered));
+    return { message: 'Reaction removed' };
+  },
 };
+
+// Initialize sample reactions if none exist
+export const initializeSampleReactions = () => {
+  const existingReactions = localStorage.getItem('mockReactions');
+  if (!existingReactions) {
+    const sampleReactions = [
+      // Post 1 reactions
+      { id: 1, post_id: 1, user_id: null, reaction_type: 'jadore', created_at: '2024-01-20T08:00:00Z' },
+      { id: 2, post_id: 1, user_id: null, reaction_type: 'jadore', created_at: '2024-01-20T08:05:00Z' },
+      { id: 3, post_id: 1, user_id: null, reaction_type: 'jaime', created_at: '2024-01-20T08:10:00Z' },
+      { id: 4, post_id: 1, user_id: null, reaction_type: 'jaime', created_at: '2024-01-20T08:15:00Z' },
+      { id: 5, post_id: 1, user_id: null, reaction_type: 'interessant', created_at: '2024-01-20T08:20:00Z' },
+      { id: 6, post_id: 1, user_id: null, reaction_type: 'utile', created_at: '2024-01-20T08:25:00Z' },
+
+      // Post 2 reactions
+      { id: 7, post_id: 2, user_id: null, reaction_type: 'jadore', created_at: '2024-01-18T09:00:00Z' },
+      { id: 8, post_id: 2, user_id: null, reaction_type: 'jaime', created_at: '2024-01-18T09:05:00Z' },
+      { id: 9, post_id: 2, user_id: null, reaction_type: 'inspirant', created_at: '2024-01-18T09:10:00Z' },
+    ];
+    localStorage.setItem('mockReactions', JSON.stringify(sampleReactions));
+  }
+};
+
+// Initialize sample comments if none exist
+export const initializeSampleComments = () => {
+  const existingComments = localStorage.getItem('mockComments');
+  if (!existingComments) {
+    const sampleComments = [
+      // Post 1 comments
+      {
+        id: 1,
+        post_id: 1,
+        user_id: 2,
+        parent_id: null,
+        author_name: null,
+        author_email: null,
+        content: 'Excellent article! Très utile et bien écrit. Merci pour le partage!',
+        is_approved: true,
+        created_at: '2024-01-20T10:30:00Z',
+        updated_at: '2024-01-20T10:30:00Z',
+        user: { id: 2, name: 'John Doe', email: 'user@blog.com' },
+      },
+      {
+        id: 2,
+        post_id: 1,
+        user_id: null,
+        parent_id: 1,
+        author_name: 'Marie Dubois',
+        author_email: 'marie@example.com',
+        content: 'Je suis d\'accord! Cet article m\'a beaucoup aidé.',
+        is_approved: true,
+        created_at: '2024-01-20T11:00:00Z',
+        updated_at: '2024-01-20T11:00:00Z',
+        user: null,
+      },
+      {
+        id: 3,
+        post_id: 1,
+        user_id: null,
+        parent_id: null,
+        author_name: 'Pierre Martin',
+        author_email: 'pierre@example.com',
+        content: 'Merci pour ces conseils pratiques! J\'attends la suite avec impatience.',
+        is_approved: true,
+        created_at: '2024-01-20T12:00:00Z',
+        updated_at: '2024-01-20T12:00:00Z',
+        user: null,
+      },
+      {
+        id: 4,
+        post_id: 1,
+        user_id: 1,
+        parent_id: 3,
+        author_name: null,
+        author_email: null,
+        content: 'Merci Pierre! La suite arrive bientôt 😊',
+        is_approved: true,
+        created_at: '2024-01-20T13:00:00Z',
+        updated_at: '2024-01-20T13:00:00Z',
+        user: { id: 1, name: 'Admin User', email: 'admin@blog.com' },
+      },
+
+      // Post 2 comments
+      {
+        id: 5,
+        post_id: 2,
+        user_id: 2,
+        parent_id: null,
+        author_name: null,
+        author_email: null,
+        content: 'Magnifiques destinations! J\'ai particulièrement aimé Bali.',
+        is_approved: true,
+        created_at: '2024-01-18T14:00:00Z',
+        updated_at: '2024-01-18T14:00:00Z',
+        user: { id: 2, name: 'John Doe', email: 'user@blog.com' },
+      },
+    ];
+    localStorage.setItem('mockComments', JSON.stringify(sampleComments));
+  }
+};
+
+// Auto-initialize on module load
+initializeSampleReactions();
+initializeSampleComments();
