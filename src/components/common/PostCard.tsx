@@ -64,15 +64,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
           {/* Meta Info */}
           <div className="flex items-center text-sm text-gray-500">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-xs font-semibold text-gray-600">
-                  {post.user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <span className="font-medium">{post.user.name}</span>
-            </div>
-            <span className="mx-2">•</span>
             <span>{formatDate(post.published_at)}</span>
           </div>
         </div>

@@ -111,18 +111,8 @@ const SinglePost: React.FC = () => {
         </h1>
 
         {/* Meta Info */}
-        <div className="flex items-center space-x-4 mb-8 pb-8 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-lg font-semibold text-gray-600">
-                {post.user.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800">{post.user.name}</p>
-              <p className="text-sm text-gray-500">{formatDate(post.published_at)}</p>
-            </div>
-          </div>
+        <div className="flex items-center mb-8 pb-8 border-b border-gray-200">
+          <p className="text-sm text-gray-500">{formatDate(post.published_at)}</p>
         </div>
 
         {/* Featured Image */}
@@ -145,27 +135,6 @@ const SinglePost: React.FC = () => {
             color: '#374151',
           }}
         />
-
-        {/* Author Card */}
-        <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-          <div className="flex items-start space-x-4">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl font-semibold text-gray-600">
-                {post.user.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{post.user.name}</h3>
-              <p className="text-gray-600 mb-3">
-                Collaborator & Editor
-              </p>
-              <p className="text-gray-600 text-sm">
-                Meet {post.user.name.split(' ')[0]}, a passionate writer and blogger with a love for technology and travel.
-                They bring a unique perspective to their writing and loves to explore new topics.
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Related Posts */}
         <div className="mt-16">
