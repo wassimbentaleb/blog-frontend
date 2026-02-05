@@ -34,53 +34,58 @@ const Comments: React.FC = () => {
   const navigate = useNavigate();
   const { confirm } = useConfirmDialog();
   const [comments, setComments] = useState<Comment[]>([]);
-  const [filteredComments, setFilteredComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    lastPage: 1,
+    perPage: 20,
+    from: 0,
+    to: 0,
+  });
 
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1); // Reset to page 1 when search changes
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch comments when filters or page changes
   useEffect(() => {
     fetchComments();
-  }, []);
-
-  useEffect(() => {
-    filterComments();
-  }, [comments, filterStatus, searchTerm]);
+  }, [debouncedSearch, filterStatus, currentPage]);
 
   const fetchComments = async () => {
+    setLoading(true);
     try {
-      const data = await apiService.getCommentsForModeration();
-      setComments(data);
+      const response = await apiService.getCommentsForModeration({
+        search: debouncedSearch || undefined,
+        status: filterStatus !== 'all' ? filterStatus : undefined,
+        page: currentPage,
+        per_page: 20,
+      });
+
+      setComments(response.data || []);
+      setPagination({
+        total: response.total || 0,
+        lastPage: response.last_page || 1,
+        perPage: response.per_page || 20,
+        from: response.from || 0,
+        to: response.to || 0,
+      });
     } catch (error) {
       console.error('Failed to fetch comments:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const filterComments = () => {
-    let filtered = [...comments];
-
-    // Filter by status
-    if (filterStatus === 'pending') {
-      filtered = filtered.filter((comment) => !comment.is_approved);
-    } else if (filterStatus === 'approved') {
-      filtered = filtered.filter((comment) => comment.is_approved);
-    }
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (comment) =>
-          comment.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          comment.author_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          comment.author_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          comment.post.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredComments(filtered);
   };
 
   const handleApprove = async (commentId: number) => {
@@ -269,7 +274,7 @@ const Comments: React.FC = () => {
 
         {/* Comments List */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          {filteredComments.length === 0 ? (
+          {comments.length === 0 ? (
             <div className="text-center py-12">
               <svg
                 className="w-16 h-16 mx-auto text-gray-400 mb-4"
@@ -317,7 +322,7 @@ const Comments: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredComments.map((comment) => (
+                  {comments.map((comment) => (
                     <tr key={comment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getAuthorDisplay(comment)}
@@ -383,6 +388,36 @@ const Comments: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {comments.length > 0 && (
+          <div className="mt-6 flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              Showing <span className="font-medium">{pagination.from}</span> to{' '}
+              <span className="font-medium">{pagination.to}</span> of{' '}
+              <span className="font-medium">{pagination.total}</span> comments
+            </p>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {pagination.lastPage}
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(pagination.lastPage, p + 1))}
+                disabled={currentPage === pagination.lastPage}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

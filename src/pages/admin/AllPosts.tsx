@@ -20,24 +20,47 @@ const AllPosts: React.FC = () => {
   const navigate = useNavigate();
   const { confirm, alert } = useConfirmDialog();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    lastPage: 1,
+    perPage: 10,
+    from: 0,
+    to: 0,
+  });
 
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1); // Reset to page 1 when search changes
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch posts when filters or page changes
   useEffect(() => {
     fetchPosts();
-  }, []);
-
-  useEffect(() => {
-    filterPosts();
-  }, [searchTerm, filterStatus, filterCategory, posts]);
+  }, [debouncedSearch, filterStatus, filterCategory, currentPage]);
 
   const fetchPosts = async () => {
+    setLoading(true);
     try {
-      const data = await apiService.getAllPostsAdmin();
-      const transformedPosts: Post[] = data.map((post: any) => ({
+      const response = await apiService.getAllPostsAdmin({
+        search: debouncedSearch || undefined,
+        status: filterStatus !== 'all' ? filterStatus : undefined,
+        category: filterCategory !== 'all' ? filterCategory : undefined,
+        page: currentPage,
+        per_page: 10,
+      });
+
+      const transformedPosts: Post[] = (response.data || []).map((post: any) => ({
         id: post.id,
         title: post.title,
         slug: post.slug,
@@ -45,35 +68,20 @@ const AllPosts: React.FC = () => {
         status: post.status,
         created_at: formatDate(post.created_at),
       }));
+
       setPosts(transformedPosts);
+      setPagination({
+        total: response.total || 0,
+        lastPage: response.last_page || 1,
+        perPage: response.per_page || 10,
+        from: response.from || 0,
+        to: response.to || 0,
+      });
     } catch (error) {
       console.error('Failed to fetch posts:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const filterPosts = () => {
-    let filtered = [...posts];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter((post) =>
-        post.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter((post) => post.status === filterStatus);
-    }
-
-    // Category filter
-    if (filterCategory !== 'all') {
-      filtered = filtered.filter((post) => post.category === filterCategory);
-    }
-
-    setFilteredPosts(filtered);
   };
 
   const handleDelete = async (id: number) => {
@@ -210,7 +218,7 @@ const AllPosts: React.FC = () => {
               <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
               </div>
-            ) : filteredPosts.length > 0 ? (
+            ) : posts.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -233,7 +241,7 @@ const AllPosts: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredPosts.map((post) => (
+                    {posts.map((post) => (
                       <tr key={post.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
@@ -303,18 +311,30 @@ const AllPosts: React.FC = () => {
             )}
           </div>
 
-          {/* Pagination (placeholder) */}
-          {filteredPosts.length > 0 && (
+          {/* Pagination */}
+          {posts.length > 0 && (
             <div className="mt-6 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Showing <span className="font-medium">{filteredPosts.length}</span> of{' '}
-                <span className="font-medium">{posts.length}</span> posts
+                Showing <span className="font-medium">{pagination.from}</span> to{' '}
+                <span className="font-medium">{pagination.to}</span> of{' '}
+                <span className="font-medium">{pagination.total}</span> posts
               </p>
-              <div className="flex space-x-2">
-                <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Previous
                 </button>
-                <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+                <span className="text-sm text-gray-600">
+                  Page {currentPage} of {pagination.lastPage}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(pagination.lastPage, p + 1))}
+                  disabled={currentPage === pagination.lastPage}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Next
                 </button>
               </div>

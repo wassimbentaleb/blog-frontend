@@ -25,24 +25,53 @@ interface Post {
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(1);
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (page: number, append: boolean = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
-      const response = await apiService.getAllPosts();
-      // Response already handled in apiService
-      setPosts(response);
+      const response = await apiService.getAllPosts({
+        page,
+        per_page: 9,
+      });
+
+      const newPosts = response.data || response || [];
+
+      if (append) {
+        setPosts((prev) => [...prev, ...newPosts]);
+      } else {
+        setPosts(newPosts);
+      }
+
+      setHasMore(page < (response.last_page || 1));
+      setCurrentPage(page);
     } catch (error: any) {
       console.error('Failed to fetch posts:', error);
-      setError('Failed to load posts. Using sample data for demo.');
-      // Set sample data for demonstration
-      setSamplePosts();
+      if (!append) {
+        setError('Failed to load posts. Using sample data for demo.');
+        setSamplePosts();
+      }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (hasMore && !loadingMore) {
+      fetchPosts(currentPage + 1, true);
     }
   };
 
@@ -164,10 +193,24 @@ const Home: React.FC = () => {
         )}
 
         {/* Load More Button */}
-        {posts.length > 0 && (
+        {posts.length > 0 && hasMore && (
           <div className="text-center mt-12">
-            <button className="bg-gray-100 text-gray-700 px-8 py-3 rounded-md hover:bg-gray-200 transition font-medium">
-              Load More
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="bg-gray-100 text-gray-700 px-8 py-3 rounded-md hover:bg-gray-200 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading...
+                </span>
+              ) : (
+                'Load More'
+              )}
             </button>
           </div>
         )}

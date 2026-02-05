@@ -14,9 +14,12 @@ export const apiService = {
   // Posts API
   // ============================================
 
-  getAllPosts: async () => {
-    const response = await api.get('/posts');
-    return response.data.data || response.data; // Handle Laravel pagination
+  getAllPosts: async (params?: {
+    page?: number;
+    per_page?: number;
+  }) => {
+    const response = await api.get('/posts', { params });
+    return response.data;
   },
 
   getPostBySlug: async (slug: string) => {
@@ -48,9 +51,15 @@ export const apiService = {
   // Admin: Posts Management
   // ============================================
 
-  getAllPostsAdmin: async () => {
-    const response = await api.get('/admin/posts');
-    return response.data.data || response.data;
+  getAllPostsAdmin: async (params?: {
+    search?: string;
+    status?: string;
+    category?: string;
+    page?: number;
+    per_page?: number;
+  }) => {
+    const response = await api.get('/admin/posts', { params });
+    return response.data;
   },
 
   createPost: async (postData: any) => {
@@ -200,9 +209,14 @@ export const apiService = {
   // Admin: Comments Moderation
   // ============================================
 
-  getCommentsForModeration: async () => {
-    const response = await api.get('/admin/comments');
-    return response.data.data || response.data;
+  getCommentsForModeration: async (params?: {
+    search?: string;
+    status?: string;
+    page?: number;
+    per_page?: number;
+  }) => {
+    const response = await api.get('/admin/comments', { params });
+    return response.data;
   },
 
   approveComment: async (commentId: number) => {
