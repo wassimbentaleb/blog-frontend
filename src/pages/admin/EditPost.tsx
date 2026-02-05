@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 import Sidebar from '../../components/common/Sidebar';
 import { apiService } from '../../services/apiData';
 import ReactQuill from 'react-quill';
@@ -16,6 +17,7 @@ const EditPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { confirm, alert } = useConfirmDialog();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -86,7 +88,10 @@ const EditPost: React.FC = () => {
       reader.readAsDataURL(file);
 
       setFeaturedImage(URL.createObjectURL(file));
-      alert('Image uploaded successfully!');
+      await alert({
+        title: 'Success',
+        message: 'Image uploaded successfully!',
+      });
     } catch (error) {
       setError('Failed to upload image');
     } finally {
@@ -127,7 +132,10 @@ const EditPost: React.FC = () => {
         status,
       });
 
-      alert('Post updated successfully!');
+      await alert({
+        title: 'Success',
+        message: 'Post updated successfully!',
+      });
       navigate('/admin/posts');
     } catch (error: any) {
       setError(error.message || 'Failed to update post');
@@ -137,14 +145,28 @@ const EditPost: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-      try {
-        await apiService.deletePost(Number(id));
-        alert('Post deleted successfully!');
-        navigate('/admin/posts');
-      } catch (error) {
-        alert('Failed to delete post');
-      }
+    const confirmed = await confirm({
+      title: 'Delete Post',
+      message: 'Are you sure you want to delete this post? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmButtonColor: 'red',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await apiService.deletePost(Number(id));
+      await alert({
+        title: 'Success',
+        message: 'Post deleted successfully!',
+      });
+      navigate('/admin/posts');
+    } catch (error) {
+      await alert({
+        title: 'Error',
+        message: 'Failed to delete post. Please try again.',
+      });
     }
   };
 

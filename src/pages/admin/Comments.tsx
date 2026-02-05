@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 import Sidebar from '../../components/common/Sidebar';
 import { apiService } from '../../services/apiData';
 import { formatDate } from '../../utils/helpers';
@@ -31,6 +32,7 @@ interface Comment {
 const Comments: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { confirm } = useConfirmDialog();
   const [comments, setComments] = useState<Comment[]>([]);
   const [filteredComments, setFilteredComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +96,15 @@ const Comments: React.FC = () => {
   };
 
   const handleDelete = async (commentId: number) => {
-    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    const confirmed = await confirm({
+      title: 'Delete Comment',
+      message: 'Are you sure you want to delete this comment? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmButtonColor: 'red',
+    });
+
+    if (!confirmed) return;
 
     try {
       await apiService.deleteComment(commentId);
@@ -103,7 +113,12 @@ const Comments: React.FC = () => {
       fetchComments();
     } catch (error) {
       console.error('Failed to delete comment:', error);
-      alert('Failed to delete comment');
+      await confirm({
+        title: 'Error',
+        message: 'Failed to delete comment. Please try again.',
+        confirmText: 'OK',
+        confirmButtonColor: 'red',
+      });
     }
   };
 

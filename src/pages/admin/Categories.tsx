@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 import Sidebar from '../../components/common/Sidebar';
 import { apiService } from '../../services/apiData';
 
@@ -15,6 +16,7 @@ interface Category {
 const Categories: React.FC = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { confirm, alert } = useConfirmDialog();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -67,28 +69,52 @@ const Categories: React.FC = () => {
         // Update category
         const updated = await apiService.updateCategory(editingCategory.id, formData);
         setCategories(categories.map((cat) => (cat.id === editingCategory.id ? updated : cat)));
-        alert('Category updated successfully!');
+        handleCloseModal();
+        await alert({
+          title: 'Success',
+          message: 'Category updated successfully!',
+        });
       } else {
         // Create new category
         const newCategory = await apiService.createCategory(formData);
         setCategories([...categories, newCategory]);
-        alert('Category created successfully!');
+        handleCloseModal();
+        await alert({
+          title: 'Success',
+          message: 'Category created successfully!',
+        });
       }
-      handleCloseModal();
     } catch (error) {
-      alert('Failed to save category');
+      await alert({
+        title: 'Error',
+        message: 'Failed to save category. Please try again.',
+      });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this category? All posts in this category will be affected.')) {
-      try {
-        await apiService.deleteCategory(id);
-        setCategories(categories.filter((cat) => cat.id !== id));
-        alert('Category deleted successfully!');
-      } catch (error) {
-        alert('Failed to delete category');
-      }
+    const confirmed = await confirm({
+      title: 'Delete Category',
+      message: 'Are you sure you want to delete this category? All posts in this category will be affected.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmButtonColor: 'red',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await apiService.deleteCategory(id);
+      setCategories(categories.filter((cat) => cat.id !== id));
+      await alert({
+        title: 'Success',
+        message: 'Category deleted successfully!',
+      });
+    } catch (error) {
+      await alert({
+        title: 'Error',
+        message: 'Failed to delete category. Please try again.',
+      });
     }
   };
 

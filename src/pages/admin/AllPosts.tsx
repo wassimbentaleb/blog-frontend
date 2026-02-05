@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 import Sidebar from '../../components/common/Sidebar';
 import { apiService } from '../../services/apiData';
 import { formatDate } from '../../utils/helpers';
@@ -17,6 +18,7 @@ interface Post {
 const AllPosts: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { confirm, alert } = useConfirmDialog();
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,14 +77,28 @@ const AllPosts: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        await apiService.deletePost(id);
-        setPosts(posts.filter((post) => post.id !== id));
-        alert('Post deleted successfully!');
-      } catch (error) {
-        alert('Failed to delete post');
-      }
+    const confirmed = await confirm({
+      title: 'Delete Post',
+      message: 'Are you sure you want to delete this post? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmButtonColor: 'red',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await apiService.deletePost(id);
+      setPosts(posts.filter((post) => post.id !== id));
+      await alert({
+        title: 'Success',
+        message: 'Post deleted successfully!',
+      });
+    } catch (error) {
+      await alert({
+        title: 'Error',
+        message: 'Failed to delete post. Please try again.',
+      });
     }
   };
 

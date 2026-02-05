@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ConfirmDialogProvider } from './context/ConfirmDialogContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Public pages (will create in next steps)
@@ -20,8 +21,9 @@ import Comments from './pages/admin/Comments';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+      <ConfirmDialogProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/post/:slug" element={<SinglePost />} />
@@ -77,8 +79,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </ConfirmDialogProvider>
     </AuthProvider>
   );
 }
