@@ -15,11 +15,18 @@ interface Post {
   created_at: string;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 const AllPosts: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { confirm, alert } = useConfirmDialog();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -44,10 +51,24 @@ const AllPosts: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   // Fetch posts when filters or page changes
   useEffect(() => {
     fetchPosts();
   }, [debouncedSearch, filterStatus, filterCategory, currentPage]);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await apiService.getAllCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -203,10 +224,11 @@ const AllPosts: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="all">All Categories</option>
-                  <option value="Technology">Technology</option>
-                  <option value="Travel">Travel</option>
-                  <option value="Business">Business</option>
-                  <option value="Lifestyle">Lifestyle</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
