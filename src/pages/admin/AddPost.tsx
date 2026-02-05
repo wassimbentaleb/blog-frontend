@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 import Sidebar from '../../components/common/Sidebar';
 import { apiService } from '../../services/apiData';
 import ReactQuill from 'react-quill';
@@ -15,6 +16,7 @@ interface Category {
 const AddPost: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { alert } = useConfirmDialog();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -76,7 +78,10 @@ const AddPost: React.FC = () => {
 
       // For demo, use local preview
       setFeaturedImage(URL.createObjectURL(file));
-      alert('Image uploaded successfully!');
+      await alert({
+        title: 'Success',
+        message: 'Image uploaded successfully!',
+      });
     } catch (error) {
       setError('Failed to upload image');
     } finally {
@@ -118,7 +123,10 @@ const AddPost: React.FC = () => {
         status,
       });
 
-      alert('Post created successfully!');
+      await alert({
+        title: 'Success',
+        message: 'Post created successfully!',
+      });
       navigate('/admin/posts');
     } catch (error: any) {
       setError(error.message || 'Failed to create post');

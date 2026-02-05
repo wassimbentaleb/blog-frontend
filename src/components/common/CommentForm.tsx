@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { apiService } from '../../services/apiData';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 
 interface CommentFormProps {
   postId: number;
@@ -18,6 +19,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
   placeholder = 'Écrivez votre commentaire...',
 }) => {
   const { user } = useAuth();
+  const { alert } = useConfirmDialog();
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [authorEmail, setAuthorEmail] = useState('');
@@ -48,7 +50,10 @@ const CommentForm: React.FC<CommentFormProps> = ({
 
       onSubmit();
     } catch (error) {
-      alert('Échec de l\'ajout du commentaire');
+      await alert({
+        title: 'Erreur',
+        message: 'Échec de l\'ajout du commentaire',
+      });
     } finally {
       setSubmitting(false);
     }

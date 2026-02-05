@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { apiService } from '../../services/apiData';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 import CommentForm from './CommentForm';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 
@@ -27,6 +28,7 @@ interface CommentItemProps {
 
 const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 }) => {
   const { user, isAdmin } = useAuth();
+  const { alert } = useConfirmDialog();
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -73,7 +75,10 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
       setIsEditing(false);
       onUpdate();
     } catch (error) {
-      alert('Échec de la modification du commentaire');
+      await alert({
+        title: 'Erreur',
+        message: 'Échec de la modification du commentaire',
+      });
     } finally {
       setSaving(false);
     }
@@ -89,7 +94,10 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
       await apiService.deleteComment(comment.id);
       onUpdate();
     } catch (error) {
-      alert('Échec de la suppression du commentaire');
+      await alert({
+        title: 'Erreur',
+        message: 'Échec de la suppression du commentaire',
+      });
     }
   };
 
