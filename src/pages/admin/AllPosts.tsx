@@ -119,14 +119,13 @@ const AllPosts: React.FC = () => {
     try {
       await apiService.deletePost(id);
       setPosts(posts.filter((post) => post.id !== id));
-      await alert({
-        title: 'Success',
-        message: 'Post deleted successfully!',
-      });
     } catch (error) {
-      await alert({
+      const errorConfirmed = await confirm({
         title: 'Error',
         message: 'Failed to delete post. Please try again.',
+        confirmText: 'OK',
+        cancelText: 'Close',
+        confirmButtonColor: 'red',
       });
     }
   };

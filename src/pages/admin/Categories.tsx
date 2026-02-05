@@ -64,30 +64,37 @@ const Categories: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Ask for confirmation before saving
+    const confirmed = await confirm({
+      title: editingCategory ? 'Update Category' : 'Create Category',
+      message: editingCategory
+        ? 'Are you sure you want to update this category?'
+        : 'Are you sure you want to create this category?',
+      confirmText: editingCategory ? 'Update' : 'Create',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) return;
+
     try {
       if (editingCategory) {
         // Update category
         const updated = await apiService.updateCategory(editingCategory.id, formData);
         setCategories(categories.map((cat) => (cat.id === editingCategory.id ? updated : cat)));
         handleCloseModal();
-        await alert({
-          title: 'Success',
-          message: 'Category updated successfully!',
-        });
       } else {
         // Create new category
         const newCategory = await apiService.createCategory(formData);
         setCategories([...categories, newCategory]);
         handleCloseModal();
-        await alert({
-          title: 'Success',
-          message: 'Category created successfully!',
-        });
       }
     } catch (error) {
-      await alert({
+      const errorConfirmed = await confirm({
         title: 'Error',
         message: 'Failed to save category. Please try again.',
+        confirmText: 'OK',
+        cancelText: 'Close',
+        confirmButtonColor: 'red',
       });
     }
   };
@@ -106,14 +113,13 @@ const Categories: React.FC = () => {
     try {
       await apiService.deleteCategory(id);
       setCategories(categories.filter((cat) => cat.id !== id));
-      await alert({
-        title: 'Success',
-        message: 'Category deleted successfully!',
-      });
     } catch (error) {
-      await alert({
+      const errorConfirmed = await confirm({
         title: 'Error',
         message: 'Failed to delete category. Please try again.',
+        confirmText: 'OK',
+        cancelText: 'Close',
+        confirmButtonColor: 'red',
       });
     }
   };

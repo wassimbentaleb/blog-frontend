@@ -77,6 +77,16 @@ const EditPost: React.FC = () => {
       return;
     }
 
+    // Ask for confirmation before uploading
+    const confirmed = await confirm({
+      title: 'Upload Image',
+      message: 'Are you sure you want to upload this image?',
+      confirmText: 'Upload',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) return;
+
     setUploading(true);
     setError('');
 
@@ -93,11 +103,6 @@ const EditPost: React.FC = () => {
 
       // Save the server URL (not blob URL)
       setFeaturedImage(imageUrl);
-
-      await alert({
-        title: 'Success',
-        message: 'Image uploaded successfully!',
-      });
     } catch (error) {
       setError('Failed to upload image. Please try again.');
       // Clear preview if upload failed
@@ -131,6 +136,19 @@ const EditPost: React.FC = () => {
       return;
     }
 
+    // Ask for confirmation before updating post
+    const confirmed = await confirm({
+      title: 'Update Post',
+      message: 'Are you sure you want to update this post?',
+      confirmText: 'Update Post',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) {
+      setSaving(false);
+      return;
+    }
+
     try {
       await apiService.updatePost(Number(id), {
         title,
@@ -141,10 +159,6 @@ const EditPost: React.FC = () => {
         status,
       });
 
-      await alert({
-        title: 'Success',
-        message: 'Post updated successfully!',
-      });
       navigate('/admin/posts');
     } catch (error: any) {
       setError(error.message || 'Failed to update post');
@@ -166,15 +180,14 @@ const EditPost: React.FC = () => {
 
     try {
       await apiService.deletePost(Number(id));
-      await alert({
-        title: 'Success',
-        message: 'Post deleted successfully!',
-      });
       navigate('/admin/posts');
     } catch (error) {
-      await alert({
+      const errorConfirmed = await confirm({
         title: 'Error',
         message: 'Failed to delete post. Please try again.',
+        confirmText: 'OK',
+        cancelText: 'Close',
+        confirmButtonColor: 'red',
       });
     }
   };

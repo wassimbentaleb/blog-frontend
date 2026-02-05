@@ -19,7 +19,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
   placeholder = 'Écrivez votre commentaire...',
 }) => {
   const { user } = useAuth();
-  const { alert } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [authorEmail, setAuthorEmail] = useState('');
@@ -31,6 +31,16 @@ const CommentForm: React.FC<CommentFormProps> = ({
     e.preventDefault();
 
     if (!content.trim()) return;
+
+    // Ask for confirmation before submitting comment
+    const confirmed = await confirm({
+      title: 'Submit Comment',
+      message: 'Are you sure you want to post this comment?',
+      confirmText: 'Post Comment',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) return;
 
     setSubmitting(true);
     try {
@@ -50,9 +60,12 @@ const CommentForm: React.FC<CommentFormProps> = ({
 
       onSubmit();
     } catch (error) {
-      await alert({
+      const errorConfirmed = await confirm({
         title: 'Erreur',
         message: 'Échec de l\'ajout du commentaire',
+        confirmText: 'OK',
+        cancelText: 'Close',
+        confirmButtonColor: 'red',
       });
     } finally {
       setSubmitting(false);

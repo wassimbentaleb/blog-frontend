@@ -16,7 +16,7 @@ interface Category {
 const AddPost: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { alert } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -59,6 +59,16 @@ const AddPost: React.FC = () => {
       return;
     }
 
+    // Ask for confirmation before uploading
+    const confirmed = await confirm({
+      title: 'Upload Image',
+      message: 'Are you sure you want to upload this image?',
+      confirmText: 'Upload',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) return;
+
     setUploading(true);
     setError('');
 
@@ -75,11 +85,6 @@ const AddPost: React.FC = () => {
 
       // Save the server URL (not blob URL)
       setFeaturedImage(imageUrl);
-
-      await alert({
-        title: 'Success',
-        message: 'Image uploaded successfully!',
-      });
     } catch (error) {
       setError('Failed to upload image. Please try again.');
       // Clear preview if upload failed
@@ -114,6 +119,19 @@ const AddPost: React.FC = () => {
       return;
     }
 
+    // Ask for confirmation before creating post
+    const confirmed = await confirm({
+      title: 'Create Post',
+      message: 'Are you sure you want to create this post?',
+      confirmText: 'Create Post',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) {
+      setLoading(false);
+      return;
+    }
+
     try {
       await apiService.createPost({
         title,
@@ -124,10 +142,6 @@ const AddPost: React.FC = () => {
         status,
       });
 
-      await alert({
-        title: 'Success',
-        message: 'Post created successfully!',
-      });
       navigate('/admin/posts');
     } catch (error: any) {
       setError(error.message || 'Failed to create post');

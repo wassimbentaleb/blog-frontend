@@ -28,7 +28,7 @@ interface CommentItemProps {
 
 const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 }) => {
   const { user, isAdmin } = useAuth();
-  const { alert } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -69,15 +69,28 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
   const handleEdit = async () => {
     if (!editContent.trim() || saving) return;
 
+    // Ask for confirmation before saving edit
+    const confirmed = await confirm({
+      title: 'Save Changes',
+      message: 'Are you sure you want to save these changes?',
+      confirmText: 'Save',
+      cancelText: 'Cancel',
+    });
+
+    if (!confirmed) return;
+
     setSaving(true);
     try {
       await apiService.updateComment(comment.id, editContent);
       setIsEditing(false);
       onUpdate();
     } catch (error) {
-      await alert({
+      const errorConfirmed = await confirm({
         title: 'Erreur',
         message: 'Échec de la modification du commentaire',
+        confirmText: 'OK',
+        cancelText: 'Close',
+        confirmButtonColor: 'red',
       });
     } finally {
       setSaving(false);
@@ -94,9 +107,12 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
       await apiService.deleteComment(comment.id);
       onUpdate();
     } catch (error) {
-      await alert({
+      const errorConfirmed = await confirm({
         title: 'Erreur',
         message: 'Échec de la suppression du commentaire',
+        confirmText: 'OK',
+        cancelText: 'Close',
+        confirmButtonColor: 'red',
       });
     }
   };
