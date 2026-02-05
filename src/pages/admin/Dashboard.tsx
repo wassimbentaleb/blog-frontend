@@ -30,22 +30,28 @@ const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const posts = await apiService.getAllPostsAdmin();
+      // Fetch all counts and recent posts in parallel
+      const [allPostsResponse, publishedResponse, draftResponse, recentPostsResponse] = await Promise.all([
+        apiService.getAllPostsAdmin({ per_page: 1 }), // Get total count
+        apiService.getAllPostsAdmin({ status: 'published', per_page: 1 }), // Get published count
+        apiService.getAllPostsAdmin({ status: 'draft', per_page: 1 }), // Get draft count
+        apiService.getAllPostsAdmin({ per_page: 5 }), // Get 5 most recent posts
+      ]);
 
-      // Calculate stats from actual data
-      const totalPosts = posts.length;
-      const publishedPosts = posts.filter((p: any) => p.status === 'published').length;
-      const draftPosts = posts.filter((p: any) => p.status === 'draft').length;
+      // Extract counts from pagination data
+      const totalPosts = allPostsResponse.total || 0;
+      const publishedPosts = publishedResponse.total || 0;
+      const draftPosts = draftResponse.total || 0;
 
       setStats({
         totalPosts,
         publishedPosts,
         draftPosts,
-        totalViews: 1542, // Mock value for demo
+        totalViews: 1542, // Mock value for demo (no views tracking yet)
       });
 
-      // Get 3 most recent posts
-      const recent = posts.slice(0, 3).map((post: any) => ({
+      // Transform recent posts
+      const recent = (recentPostsResponse.data || []).map((post: any) => ({
         id: post.id,
         title: post.title,
         status: post.status,
