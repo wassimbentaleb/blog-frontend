@@ -43,6 +43,15 @@ const Sidebar: React.FC = () => {
         </svg>
       )
     },
+    {
+      path: '/admin/comments',
+      label: 'Comments',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      )
+    },
   ];
 
   return (
@@ -51,10 +60,10 @@ const Sidebar: React.FC = () => {
       <div className="p-6 border-b border-gray-700">
         <Link to="/" className="flex items-center space-x-2">
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">M</span>
+            <span className="text-white font-bold text-xl">T</span>
           </div>
           <div>
-            <h2 className="text-xl font-bold">MetaBlog</h2>
+            <h2 className="text-xl font-bold">Teckblog</h2>
             <p className="text-xs text-gray-400">Admin Panel</p>
           </div>
         </Link>

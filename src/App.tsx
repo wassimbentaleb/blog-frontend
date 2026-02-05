@@ -15,6 +15,7 @@ import AllPosts from './pages/admin/AllPosts';
 import AddPost from './pages/admin/AddPost';
 import EditPost from './pages/admin/EditPost';
 import Categories from './pages/admin/Categories';
+import Comments from './pages/admin/Comments';
 
 function App() {
   return (
@@ -65,6 +66,14 @@ function App() {
             element={
               <ProtectedRoute requireAdmin>
                 <Categories />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/comments"
+            element={
+              <ProtectedRoute requireAdmin>
+                <Comments />
               </ProtectedRoute>
             }
           />
