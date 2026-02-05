@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import { useAuth } from '../../context/AuthContext';
 import CommentForm from './CommentForm';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
@@ -69,7 +69,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
 
     setSaving(true);
     try {
-      await mockAPI.updateComment(comment.id, editContent);
+      await apiService.updateComment(comment.id, editContent);
       setIsEditing(false);
       onUpdate();
     } catch (error) {
@@ -86,7 +86,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
   const handleDeleteConfirm = async () => {
     setShowDeleteModal(false);
     try {
-      await mockAPI.deleteComment(comment.id);
+      await apiService.deleteComment(comment.id);
       onUpdate();
     } catch (error) {
       alert('Échec de la suppression du commentaire');

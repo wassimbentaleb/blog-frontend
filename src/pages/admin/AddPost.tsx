@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/common/Sidebar';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -34,7 +34,7 @@ const AddPost: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const data = await mockAPI.getAllCategories();
+      const data = await apiService.getAllCategories();
       setCategories(data);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
@@ -109,7 +109,7 @@ const AddPost: React.FC = () => {
     }
 
     try {
-      await mockAPI.createPost({
+      await apiService.createPost({
         title,
         content,
         excerpt,

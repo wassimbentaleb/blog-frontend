@@ -4,7 +4,7 @@ import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import ReactionButtons from '../../components/common/ReactionButtons';
 import CommentList from '../../components/common/CommentList';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import { formatDate } from '../../utils/helpers';
 
 interface Post {
@@ -41,7 +41,7 @@ const SinglePost: React.FC = () => {
 
   const fetchPost = async (postSlug: string) => {
     try {
-      const data = await mockAPI.getPostBySlug(postSlug);
+      const data = await apiService.getPostBySlug(postSlug);
       setPost(data);
     } catch (error: any) {
       console.error('Failed to fetch post:', error);

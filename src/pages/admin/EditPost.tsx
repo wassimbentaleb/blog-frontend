@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/common/Sidebar';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -37,7 +37,7 @@ const EditPost: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const data = await mockAPI.getAllCategories();
+      const data = await apiService.getAllCategories();
       setCategories(data);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
@@ -46,7 +46,7 @@ const EditPost: React.FC = () => {
 
   const fetchPost = async () => {
     try {
-      const post = await mockAPI.getPostById(Number(id));
+      const post = await apiService.getPostById(Number(id));
       setTitle(post.title);
       setContent(post.content);
       setExcerpt(post.excerpt || '');
@@ -118,7 +118,7 @@ const EditPost: React.FC = () => {
     }
 
     try {
-      await mockAPI.updatePost(Number(id), {
+      await apiService.updatePost(Number(id), {
         title,
         content,
         excerpt,
@@ -139,7 +139,7 @@ const EditPost: React.FC = () => {
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
       try {
-        await mockAPI.deletePost(Number(id));
+        await apiService.deletePost(Number(id));
         alert('Post deleted successfully!');
         navigate('/admin/posts');
       } catch (error) {

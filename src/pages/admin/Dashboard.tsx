@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/common/Sidebar';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import { formatDate } from '../../utils/helpers';
 
 interface Stats {
@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const posts = await mockAPI.getAllPostsAdmin();
+      const posts = await apiService.getAllPostsAdmin();
 
       // Calculate stats from actual data
       const totalPosts = posts.length;

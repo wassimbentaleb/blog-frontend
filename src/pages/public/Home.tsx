@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import PostCard from '../../components/common/PostCard';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 
 interface Post {
   id: number;
@@ -33,9 +33,9 @@ const Home: React.FC = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await mockAPI.getAllPosts();
-      // Laravel pagination wraps data in 'data' property
-      setPosts(response.data || response);
+      const response = await apiService.getAllPosts();
+      // Response already handled in apiService
+      setPosts(response);
     } catch (error: any) {
       console.error('Failed to fetch posts:', error);
       setError('Failed to load posts. Using sample data for demo.');

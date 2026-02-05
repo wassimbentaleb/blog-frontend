@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/common/Sidebar';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 
 interface Category {
   id: number;
@@ -30,7 +30,7 @@ const Categories: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const data = await mockAPI.getAllCategories();
+      const data = await apiService.getAllCategories();
       setCategories(data);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
@@ -65,12 +65,12 @@ const Categories: React.FC = () => {
     try {
       if (editingCategory) {
         // Update category
-        const updated = await mockAPI.updateCategory(editingCategory.id, formData);
+        const updated = await apiService.updateCategory(editingCategory.id, formData);
         setCategories(categories.map((cat) => (cat.id === editingCategory.id ? updated : cat)));
         alert('Category updated successfully!');
       } else {
         // Create new category
-        const newCategory = await mockAPI.createCategory(formData);
+        const newCategory = await apiService.createCategory(formData);
         setCategories([...categories, newCategory]);
         alert('Category created successfully!');
       }
@@ -83,7 +83,7 @@ const Categories: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this category? All posts in this category will be affected.')) {
       try {
-        await mockAPI.deleteCategory(id);
+        await apiService.deleteCategory(id);
         setCategories(categories.filter((cat) => cat.id !== id));
         alert('Category deleted successfully!');
       } catch (error) {

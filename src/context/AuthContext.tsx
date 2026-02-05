@@ -1,8 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { mockAPI } from '../services/mockData';
-
-// Change this to true to use real API, false for mock data
-const USE_MOCK_API = true;
+import api from '../services/api';
 
 interface User {
   id: number;
@@ -45,16 +42,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (token) {
       try {
-        if (USE_MOCK_API) {
-          const response = await mockAPI.getCurrentUser();
-          setUser(response.user);
-        }
+        const response = await api.get('/me');
+        setUser(response.data);
       } catch (error) {
         console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
+        localStorage.removeItem('auth_token');
         setUser(null);
       }
     }
@@ -63,48 +58,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      if (USE_MOCK_API) {
-        const response = await mockAPI.login(email, password);
-        localStorage.setItem('token', response.token);
-        setUser(response.user);
-        return { success: true };
-      }
-      return { success: false, error: 'API not configured' };
+      const response = await api.post('/login', { email, password });
+      localStorage.setItem('auth_token', response.data.token);
+      setUser(response.data.user);
+      return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        error: error.message || 'Login failed',
+        error: error.response?.data?.message || 'Login failed. Please check your credentials.',
       };
     }
   };
 
   const register = async (name: string, email: string, password: string, password_confirmation: string) => {
     try {
-      if (USE_MOCK_API) {
-        const response = await mockAPI.register(name, email, password);
-        localStorage.setItem('token', response.token);
-        setUser(response.user);
-        return { success: true };
-      }
-      return { success: false, error: 'API not configured' };
+      const response = await api.post('/register', {
+        name,
+        email,
+        password,
+        password_confirmation,
+      });
+      localStorage.setItem('auth_token', response.data.token);
+      setUser(response.data.user);
+      return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        error: error.message || 'Registration failed',
+        error: error.response?.data?.message || 'Registration failed. Please try again.',
       };
     }
   };
 
   const logout = async () => {
     try {
-      // With mock API, just clear local storage
-      if (!USE_MOCK_API) {
-        // await authAPI.logout(); // Only call real API if not using mock
-      }
+      await api.post('/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
+      localStorage.removeItem('auth_token');
       setUser(null);
     }
   };

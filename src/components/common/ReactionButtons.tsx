@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { mockAPI, REACTION_TYPES } from '../../services/mockData';
+import { apiService, REACTION_TYPES } from '../../services/apiData';
 import { useAuth } from '../../context/AuthContext';
 
 interface ReactionButtonsProps {
@@ -43,30 +43,35 @@ const ReactionButtons: React.FC<ReactionButtonsProps> = ({ postId }) => {
 
   const fetchReactions = async () => {
     try {
-      const [reactionStats, currentUserReaction] = await Promise.all([
-        mockAPI.getReactionStats(postId),
-        mockAPI.getUserReaction(postId, user?.id || null),
-      ]);
-
+      // Get reaction stats
+      const reactionStats = await apiService.getReactionStats(postId);
       setStats(reactionStats);
-      setUserReaction(currentUserReaction?.reaction_type || null);
+
+      // Get all reactions to find user's reaction
+      if (user) {
+        const allReactions = await apiService.getPostReactions(postId);
+        const userReactionObj = allReactions.find((r: any) => r.user_id === user.id);
+        setUserReaction(userReactionObj?.reaction_type || null);
+      } else {
+        setUserReaction(null);
+      }
     } catch (error) {
       console.error('Failed to fetch reactions:', error);
     }
   };
 
   const handleReactionClick = async (reactionType: string) => {
-    if (loading) return;
+    if (loading || !user) return;
 
     setLoading(true);
     try {
       if (userReaction === reactionType) {
         // Remove reaction if clicking the same one
-        await mockAPI.removeReaction(postId, user?.id || null);
+        await apiService.removeReaction(postId, user?.id || null);
         setUserReaction(null);
       } else {
         // Add or update reaction
-        await mockAPI.addReaction(postId, user?.id || null, reactionType);
+        await apiService.addReaction(postId, user?.id || null, reactionType);
         setUserReaction(reactionType);
       }
 
@@ -83,6 +88,12 @@ const ReactionButtons: React.FC<ReactionButtonsProps> = ({ postId }) => {
     <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
       <h3 className="text-lg font-bold text-gray-800 mb-4">Réactions</h3>
 
+      {!user && (
+        <p className="text-sm text-gray-600 mb-4">
+          Connectez-vous pour réagir à cet article.
+        </p>
+      )}
+
       {/* Reaction Buttons */}
       <div className="flex flex-wrap gap-3 mb-4">
         {reactions.map((reaction) => {
@@ -93,7 +104,7 @@ const ReactionButtons: React.FC<ReactionButtonsProps> = ({ postId }) => {
             <button
               key={reaction.type}
               onClick={() => handleReactionClick(reaction.type)}
-              disabled={loading}
+              disabled={loading || !user}
               className={`
                 flex items-center space-x-2 px-4 py-2 rounded-full border-2 transition-all
                 ${

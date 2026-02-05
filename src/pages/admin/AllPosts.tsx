@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/common/Sidebar';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import { formatDate } from '../../utils/helpers';
 
 interface Post {
@@ -34,7 +34,7 @@ const AllPosts: React.FC = () => {
 
   const fetchPosts = async () => {
     try {
-      const data = await mockAPI.getAllPostsAdmin();
+      const data = await apiService.getAllPostsAdmin();
       const transformedPosts: Post[] = data.map((post: any) => ({
         id: post.id,
         title: post.title,
@@ -77,7 +77,7 @@ const AllPosts: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
-        await mockAPI.deletePost(id);
+        await apiService.deletePost(id);
         setPosts(posts.filter((post) => post.id !== id));
         alert('Post deleted successfully!');
       } catch (error) {

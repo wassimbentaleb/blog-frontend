@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import { useAuth } from '../../context/AuthContext';
 
 interface CommentFormProps {
@@ -32,7 +32,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
 
     setSubmitting(true);
     try {
-      await mockAPI.addComment(
+      await apiService.addComment(
         postId,
         user?.id || null,
         content,

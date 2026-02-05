@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { mockAPI } from '../../services/mockData';
+import { apiService } from '../../services/apiData';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 
@@ -32,7 +32,7 @@ const CommentList: React.FC<CommentListProps> = ({ postId }) => {
 
   const fetchComments = async () => {
     try {
-      const data = await mockAPI.getPostComments(postId);
+      const data = await apiService.getPostComments(postId);
       setComments(data);
     } catch (error) {
       console.error('Failed to fetch comments:', error);
