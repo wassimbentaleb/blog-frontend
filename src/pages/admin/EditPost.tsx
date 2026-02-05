@@ -81,19 +81,28 @@ const EditPost: React.FC = () => {
     setError('');
 
     try {
+      // Create local preview immediately for better UX
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
 
-      setFeaturedImage(URL.createObjectURL(file));
+      // Upload to Laravel server
+      const imageUrl = await apiService.uploadImage(file);
+
+      // Save the server URL (not blob URL)
+      setFeaturedImage(imageUrl);
+
       await alert({
         title: 'Success',
         message: 'Image uploaded successfully!',
       });
     } catch (error) {
-      setError('Failed to upload image');
+      setError('Failed to upload image. Please try again.');
+      // Clear preview if upload failed
+      setImagePreview('');
+      setFeaturedImage('');
     } finally {
       setUploading(false);
     }
