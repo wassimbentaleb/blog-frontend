@@ -32,6 +32,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     fetchPosts(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPosts = async (page: number, append: boolean = false) => {

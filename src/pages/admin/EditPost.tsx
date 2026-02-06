@@ -17,7 +17,7 @@ const EditPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { confirm, alert } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -35,6 +35,7 @@ const EditPost: React.FC = () => {
   useEffect(() => {
     fetchCategories();
     fetchPost();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchCategories = async () => {

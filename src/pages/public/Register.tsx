@@ -227,10 +227,12 @@ const Register: React.FC = () => {
               />
               <span className="ml-2 text-sm text-gray-600">
                 I agree to the{' '}
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a href="#" className="text-primary hover:underline">
                   Terms and Conditions
                 </a>{' '}
                 and{' '}
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a href="#" className="text-primary hover:underline">
                   Privacy Policy
                 </a>

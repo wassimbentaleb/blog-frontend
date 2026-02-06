@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { useConfirmDialog } from '../../context/ConfirmDialogContext';
 import Sidebar from '../../components/common/Sidebar';
 import { apiService } from '../../services/apiData';
@@ -30,8 +28,6 @@ interface Comment {
 }
 
 const Comments: React.FC = () => {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
   const { confirm } = useConfirmDialog();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);

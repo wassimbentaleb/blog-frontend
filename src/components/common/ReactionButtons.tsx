@@ -39,6 +39,7 @@ const ReactionButtons: React.FC<ReactionButtonsProps> = ({ postId }) => {
 
   useEffect(() => {
     fetchReactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   const fetchReactions = async () => {

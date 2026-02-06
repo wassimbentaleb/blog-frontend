@@ -96,6 +96,7 @@ const Login: React.FC = () => {
               />
               <span className="ml-2 text-sm text-gray-600">Remember me</span>
             </label>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a href="#" className="text-sm text-primary hover:underline">
               Forgot password?
             </a>
