@@ -182,7 +182,7 @@ const EditPost: React.FC = () => {
       await apiService.deletePost(Number(id));
       navigate('/admin/posts');
     } catch (error) {
-      const errorConfirmed = await confirm({
+      await confirm({
         title: 'Error',
         message: 'Failed to delete post. Please try again.',
         confirmText: 'OK',

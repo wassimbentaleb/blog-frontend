@@ -1,0 +1,152 @@
+I need to implement backend filtering and pagination for my Teckblog Laravel API. Here are all the filters and searches currently in my React frontend that need to be moved to Laravel backend:
+
+===========================================
+1. ADMIN ALL POSTS FILTERING
+===========================================
+
+Endpoint: GET /api/admin/posts
+
+Query Parameters Needed:
+- search: Search posts by title (WHERE title LIKE '%search%')
+- status: Filter by status (values: 'all', 'published', 'draft')
+- category: Filter by category name (values: 'all', 'Technology', 'Travel', 'Business', 'Lifestyle')
+- page: Page number for pagination
+- per_page: Results per page (default: 10)
+
+Example Requests:
+- /api/admin/posts?search=laravel
+- /api/admin/posts?status=published
+- /api/admin/posts?category=Technology
+- /api/admin/posts?search=react&status=published&category=Technology&page=2
+
+Response Format:
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Post Title",
+      "slug": "post-title",
+      "status": "published",
+      "category": { "id": 1, "name": "Technology" },
+      "created_at": "2024-01-15 10:30:00"
+    }
+  ],
+  "current_page": 1,
+  "last_page": 5,
+  "per_page": 10,
+  "total": 50
+}
+
+===========================================
+2. ADMIN COMMENTS FILTERING
+===========================================
+
+Endpoint: GET /api/admin/comments
+
+Query Parameters Needed:
+- search: Multi-field search across:
+  * comments.content
+  * users.name (registered users)
+  * comments.author_name (guest users)
+  * posts.title
+- status: Filter by approval status (values: 'all', 'pending', 'approved')
+  * 'pending' = WHERE is_approved = 0
+  * 'approved' = WHERE is_approved = 1
+- page: Page number
+- per_page: Results per page (default: 20)
+
+Example Requests:
+- /api/admin/comments?search=great
+- /api/admin/comments?status=pending
+- /api/admin/comments?search=john&status=approved
+
+Response Format:
+{
+  "data": [
+    {
+      "id": 1,
+      "content": "Great article!",
+      "is_approved": true,
+      "author_name": null,
+      "author_email": null,
+      "user": { "id": 2, "name": "John Doe" },
+      "post": { "id": 5, "title": "Laravel Tutorial" },
+      "created_at": "2024-01-15 10:30:00"
+    }
+  ],
+  "current_page": 1,
+  "last_page": 3,
+  "per_page": 20,
+  "total": 45
+}
+
+===========================================
+3. PUBLIC HOMEPAGE PAGINATION
+===========================================
+
+Endpoint: GET /api/posts
+
+Query Parameters Needed:
+- page: Page number
+- per_page: Results per page (default: 9)
+
+Auto-applied filters:
+- Only published posts (WHERE status = 'published')
+- Order by created_at DESC
+
+Example Requests:
+- /api/posts?page=1
+- /api/posts?page=2&per_page=6
+
+Response Format:
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Post Title",
+      "slug": "post-title",
+      "excerpt": "Short description",
+      "featured_image": "http://localhost:8000/storage/images/post-1.jpg",
+      "category": { "id": 1, "name": "Technology" },
+      "user": { "id": 1, "name": "John Doe" }
+    }
+  ],
+  "current_page": 1,
+  "last_page": 4,
+  "per_page": 9,
+  "total": 35
+}
+
+===========================================
+REQUIREMENTS
+===========================================
+
+1. Update PostController@index (or create adminIndex method) to handle:
+   - Search by title
+   - Filter by status
+   - Filter by category (using category.name, not ID)
+   - Pagination
+
+2. Update CommentController@adminIndex to handle:
+   - Multi-field search (content, author_name, author_email, users.name, posts.title)
+   - Filter by approval status
+   - Pagination
+   - Include user and post relationships in response
+
+3. Update public posts endpoint to:
+   - Return only published posts
+   - Add pagination (9 per page)
+
+4. All endpoints should return Laravel's standard pagination format with:
+   - data (array of results)
+   - current_page
+   - last_page
+   - per_page
+   - total
+   - from, to
+
+5. Add these database indexes for performance:
+   - posts: status, created_at, category_id, title (FULLTEXT)
+   - comments: is_approved, created_at, post_id, content (FULLTEXT), author_name
+
+Please implement these filters and pagination for all three endpoints. Make sure to use Laravel's Query Builder, apply filters conditionally (only if parameter exists), and return proper paginated responses.

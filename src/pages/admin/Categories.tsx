@@ -16,7 +16,7 @@ interface Category {
 const Categories: React.FC = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const { confirm, alert } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -89,7 +89,7 @@ const Categories: React.FC = () => {
         handleCloseModal();
       }
     } catch (error) {
-      const errorConfirmed = await confirm({
+      await confirm({
         title: 'Error',
         message: 'Failed to save category. Please try again.',
         confirmText: 'OK',
@@ -114,7 +114,7 @@ const Categories: React.FC = () => {
       await apiService.deleteCategory(id);
       setCategories(categories.filter((cat) => cat.id !== id));
     } catch (error) {
-      const errorConfirmed = await confirm({
+      await confirm({
         title: 'Error',
         message: 'Failed to delete category. Please try again.',
         confirmText: 'OK',

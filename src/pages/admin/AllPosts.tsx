@@ -22,9 +22,9 @@ interface Category {
 }
 
 const AllPosts: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const { confirm, alert } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
   const [posts, setPosts] = useState<Post[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +59,7 @@ const AllPosts: React.FC = () => {
   // Fetch posts when filters or page changes
   useEffect(() => {
     fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, filterStatus, filterCategory, currentPage]);
 
   const fetchCategories = async () => {
@@ -120,7 +121,7 @@ const AllPosts: React.FC = () => {
       await apiService.deletePost(id);
       setPosts(posts.filter((post) => post.id !== id));
     } catch (error) {
-      const errorConfirmed = await confirm({
+      await confirm({
         title: 'Error',
         message: 'Failed to delete post. Please try again.',
         confirmText: 'OK',

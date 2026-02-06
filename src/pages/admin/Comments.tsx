@@ -30,7 +30,7 @@ interface Comment {
 }
 
 const Comments: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const { confirm } = useConfirmDialog();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -61,6 +61,7 @@ const Comments: React.FC = () => {
   // Fetch comments when filters or page changes
   useEffect(() => {
     fetchComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, filterStatus, currentPage]);
 
   const fetchComments = async () => {
@@ -125,11 +126,6 @@ const Comments: React.FC = () => {
         confirmButtonColor: 'red',
       });
     }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
   };
 
   const getAuthorDisplay = (comment: Comment) => {

@@ -60,7 +60,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
 
       onSubmit();
     } catch (error) {
-      const errorConfirmed = await confirm({
+      await confirm({
         title: 'Erreur',
         message: 'Échec de l\'ajout du commentaire',
         confirmText: 'OK',

@@ -28,6 +28,7 @@ const CommentList: React.FC<CommentListProps> = ({ postId }) => {
 
   useEffect(() => {
     fetchComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   const fetchComments = async () => {

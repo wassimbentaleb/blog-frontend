@@ -85,7 +85,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
       setIsEditing(false);
       onUpdate();
     } catch (error) {
-      const errorConfirmed = await confirm({
+      await confirm({
         title: 'Erreur',
         message: 'Échec de la modification du commentaire',
         confirmText: 'OK',
@@ -107,7 +107,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, level = 0 
       await apiService.deleteComment(comment.id);
       onUpdate();
     } catch (error) {
-      const errorConfirmed = await confirm({
+      await confirm({
         title: 'Erreur',
         message: 'Échec de la suppression du commentaire',
         confirmText: 'OK',
